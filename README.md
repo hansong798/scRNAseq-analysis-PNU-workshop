@@ -1,5 +1,5 @@
 # scRNAseq-analysis-workshop using R
-#### Compiled by Hansong Lee
+#### Compiled by Hansong Lee, Pusan national university.
 ### Table of Content
   * [Preparation](#preparation)
   * [Analysis](#analysis)
