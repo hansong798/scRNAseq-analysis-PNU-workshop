@@ -22,6 +22,7 @@ We will only download only 4 samples, 'healthy control 1', 'healthy control 2', 
 Please, Use 'custom' button.
 
 Next, uncompress the .tar file.
+Please do not uncompress .gz files.
 
 !! You should note that
 * Create new folder for each sample and move files into each sample folder.
