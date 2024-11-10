@@ -1,5 +1,5 @@
 # scRNAseq-analysis-workshop using R
-#### Compiled by Hansong Lee, Pusan national university.
+#### Compiled by Hansong Lee
 ### Table of Content
   * [Preparation](#preparation)
   * [Analysis](#analysis)
@@ -8,9 +8,8 @@
     * [Step 3. Integration](#step-3-integration)
     * [Step 4. Run UMAP on a single integrated dataset](#step-4-run-umap-on-a-single-integrated-dataset)
     * [Step 5. Clustering](#step-5-clustering)
-    * [Step 6. Annotatation](#step-6-annotation)
-    * [Step 7. Find DEGs](#step-7-find-degs)
-    * [Step 8. Save the result](#step-8-save-the-result)
+    * [Step 6. Annotation](#step-6-annotation)
+    * [Step 7. Save the result](#step-7-save-the-result)
 
 
 
@@ -21,7 +20,7 @@ Download GEO dataset from [https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi](https
 We will only download only 4 samples, 'healthy control 1', 'healthy control 2', 'PD1', 'PD2', for practice.
 Please, Use 'custom' button.
 
-Next, uncompress the .tar file.
+Next, uncompress the .tar file. 
 Please do not uncompress .gz files.
 
 !! You should note that
@@ -31,15 +30,19 @@ Please do not uncompress .gz files.
 ### Download packages
 In this workshop, we will use Seurat 4.4.0 and SeuratObject 4.1.4.
 ```R
+packageVersion('Seurat')        # Caution with Seurat v5!
+packageVersion('SeuratObject')
+packageVersion('sctransform')
+
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools")
+}
 if (!requireNamespace("remotes", quietly = TRUE)) {
   install.packages("remotes")
 }
-remotes::install_version("SeuratObject", "4.1.4")
-remotes::install_version("Seurat", "4.4.0", upgrade = FALSE)
 
-#packageVersion('SeuratObject')
-#packageVersion('Seurat')
-#packageVersion('sctransform')
+remotes::install_version("SeuratObject", "4.1.4", dependencies = T)   # ~15min
+remotes::install_version("Seurat", "4.4.0", upgrade = FALSE)          # ~15min
 
 install.packages('ggplot2')
 install.packages("dplyr")
@@ -51,7 +54,7 @@ install.packages("dplyr")
 
 ```R
 library(Seurat); library(ggplot2); library(dplyr)
-setwd('D:/0_Workshop')
+setwd('D:/0_Workshop')   # <<-------- You need to write your directory
 H1 <- Read10X(data.dir = 'H1')
 H2 <- Read10X(data.dir = 'H2')
 PD1 <- Read10X(data.dir = 'PD1')
@@ -64,6 +67,7 @@ seurat_PD1 <- CreateSeuratObject(PD1,  project = "PD1")
 seurat_PD2 <- CreateSeuratObject(PD2,  project = "PD2")
 # dim(seurat_H1)
 # seurat_H1
+# seurat_H1@meta.data
 seurat_H1$orig.ident; length(seurat_H1$orig.ident)
 seurat_H1$nCount_RNA; length(seurat_H1$nCount_RNA)
 seurat_H1$nFeature_RNA; length(seurat_H1$nFeature_RNA)
@@ -72,13 +76,15 @@ rawdata <- merge(x = seurat_H1, y = c(seurat_H2, seurat_PD1, seurat_PD2),
                       add.cell.ids = c('H1','H2','PD1','PD2'))
 # dim(rawdata)
 # table(rawdata$orig.ident)
+head(rawdata@meta.data)
+tail(rawdata@meta.data)
 
 ```
 
 
 ### Step 2. Quality control
 ```R
-rawdata[["percent.mt"]] <- PercentageFeatureSet(rawdata, pattern = "^MT-") # "^mt" in mouse
+rawdata[["percent.mt"]] <- PercentageFeatureSet(rawdata, pattern = "^MT-") # "^mt-" in mouse
 VlnPlot(rawdata, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
 VlnPlot(rawdata, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3, pt.size = 0)
 
@@ -91,10 +97,12 @@ rawdata@meta.data %>%
   geom_point() + 
   scale_colour_gradient(low = "gray90", high = "blue") +
   theme_classic()
+  # geom_hline(yintercept = 600)
 ```
 
-![image](https://github.com/user-attachments/assets/7e268763-0155-4651-bf67-144b835f1f44)
-![image](https://github.com/user-attachments/assets/3b249d57-cd22-4add-ac63-b41ac851c05b)
+![image](https://github.com/user-attachments/assets/a1bf64f3-a592-4c12-bf22-27a0c77dafb0)
+![image](https://github.com/user-attachments/assets/57583d6c-264a-4b72-869b-7655a2863a39)
+
 
 We can check a optimal threshold using 'geom_hline' from ggplot2.
 
@@ -169,12 +177,15 @@ which(cumsd > 0.8)
 intdata <- RunUMAP(intdata, reduction = "pca", dims = 1:33)
 DimPlot(intdata, group.by = 'orig.ident')
 ```
-![image](https://github.com/user-attachments/assets/e07da2cd-280c-471b-a339-437db06215ec)
+![image](https://github.com/user-attachments/assets/e7cac226-7ea5-4961-a96e-0ee7bab67f31)
+
 
 * Before integration
 
 Compare the upper UMAP with below.
-![image](https://github.com/user-attachments/assets/f1404d4b-b73e-44dd-bbbd-f70fded16aca)
+
+![image](https://github.com/user-attachments/assets/e5c776d8-4101-4fa5-b9c7-2df030dcd5c4)
+
 
 
 ### Step 5. Clustering
@@ -182,12 +193,14 @@ Compare the upper UMAP with below.
 intdata <- FindNeighbors(intdata, reduction = "pca", dims = 1:33)
 intdata <- FindClusters(intdata, resolution = 0.2)
 intdata$integrated_snn_res.0.2
+DimPlot(intdata, group.by = 'integrated_snn_res.0.2', label = T) 
 ```
-![image](https://github.com/user-attachments/assets/d41733e6-dee0-4b87-b4f7-3d0d7ada8d7b)
+![image](https://github.com/user-attachments/assets/487c9207-f456-4d12-8520-1d999b12d1fc)
 
 
 
-### Step 6. Annotatation
+
+### Step 6. Annotation
 ```R
 intdata@assays
 DefaultAssay(intdata) <- 'RNA'
@@ -230,26 +243,19 @@ celltype <- c('0' = 'CD4T',
 Idents(intdata) <- 'integrated_snn_res.0.2'
 intdata <- RenameIdents(intdata, celltype)
 celltype <- Idents(intdata)
+intdata$celltype <- celltype
 DimPlot(intdata, label = T)
+
+ggplot(data = intdata@meta.data, aes(x = orig.ident, fill = celltype)) +
+  geom_bar(position = 'fill', colour="black")
 ```
 
+![image](https://github.com/user-attachments/assets/407c68cd-1835-4802-9448-34991e87e5e3)
 
-### Step 7. Find DEGs
-```R
-intdata$group <- ifelse(grepl('H',intdata$orig.ident), 'Healthy', 'PD')
-table(grepl('H',intdata$orig.ident))
-table(intdata$orig.ident)
-
-NKcell <- subset(intdata, celltype == 'NK')
-NKcell_HvsPD <- FindMarkers(NKcell, ident.1 = 'PD', ident.2 = 'Healthy', group.by = 'group')
-sig_NKcell_HvsPD <- NKcell_HvsPD %>% filter(p_val_adj < 0.05) %>% arrange(desc(avg_log2FC))
-head(sig_NKcell_HvsPD)
-
-VlnPlot(NKcell, group.by = 'group', features = c('RPS4Y1','MT2A','GNLY','IFITM1','DDX3Y','CCL3L1'))
-```
+![image](https://github.com/user-attachments/assets/a9676148-f868-4286-a8ea-211e9d364fbb)
 
 
-### Step 8. Save the result
+### Step 7. Save the result
 ```R
 # Way 1
 saveRDS(seurat, file="DS1/seurat_obj_all.rds")
