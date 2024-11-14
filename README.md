@@ -1,4 +1,4 @@
-# scRNAseq-analysis-workshop using R
+# scRNAseq-analysis-PNU-workshop using R
 #### Compiled by Hansong Lee
 ### Table of Content
   * [Preparation](#preparation)
