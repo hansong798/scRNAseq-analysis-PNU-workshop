@@ -117,8 +117,6 @@ filtdata <- subset(rawdata, subset = nFeature_RNA > 600 & nFeature_RNA < 5000 & 
 ```R
 exdata <- NormalizeData(exdata)
 exdata <- FindVariableFeatures(exdata)  # default, nfeatures = 2000
-top_features <- head(VariableFeatures(exdata), 20)
-VariableFeaturePlot(exdata) + LabelPoints(plot = plot1, points = top_features, repel = TRUE)
 exdata <- ScaleData(exdata)
 ```
 
