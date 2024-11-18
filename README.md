@@ -32,7 +32,6 @@ In this workshop, we will use Seurat 4.4.0 and SeuratObject 4.1.4.
 ```R
 packageVersion('Seurat')        # Caution with Seurat v5!
 packageVersion('SeuratObject')
-packageVersion('sctransform')
 
 if (!requireNamespace("devtools", quietly = TRUE)) {
   install.packages("devtools")
