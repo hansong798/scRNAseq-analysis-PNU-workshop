@@ -255,12 +255,12 @@ ggplot(data = intdata@meta.data, aes(x = orig.ident, fill = celltype)) +
 ### Step 7. Save the result
 ```R
 # Way 1
-saveRDS(seurat, file="DS1/seurat_obj_all.rds")
-saveRDS(seurat_dorsal, file="DS1/seurat_obj_dorsal.rds")
-seurat <- readRDS("DS1/seurat_obj_all.rds")
-seurat_dorsal <- readRDS("DS1/seurat_obj_dorsal.rds")
+saveRDS(intdata, file="D:/0_Workshop/RData/intdata.rds")
+intdata <- readRDS("D:/0_Workshop/RData/intdata.rds")
+
 
 # Way 2
 save(intdata, file = 'D:/0_Workshop/RData/intdata.RData')
+load('D:/0_Workshop/RData/intdata.RData')
 ```
 
