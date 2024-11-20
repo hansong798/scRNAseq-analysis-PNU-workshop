@@ -125,9 +125,9 @@ exdata <- ScaleData(exdata)
 exdata <- SCTransform(exdata)
 ```
 
-- Log Normalization: 'simple, fast' vs 'sequencing depth, zero count, asymmetric distribution'
+- Log Normalization: 'simple, fast' vs 'zero count, asymmetric distribution'
 
-- SCTransform: 'sequencing depth, zero count' vs 'problems with multiple data comparison (information from the other cells to avoid overestimation), random sampling'
+- SCTransform: 'zero count, variance stabilization' vs 'problems with multiple data comparison (information from the other cells to avoid overestimation), random sampling'
 
 We will use Log normalization in this workshop.
 
